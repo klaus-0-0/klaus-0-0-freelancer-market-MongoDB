@@ -29,7 +29,7 @@ router.get("/csrf-token", csrfProtection, (req, res) => {
   }
 });
 
-// SIGNUP WITH CSRF PROTECTION
+//  SIGNUP WITH CSRF PROTECTION
 router.post("/signup", csrfProtection, async (req, res) => {
   try {
     console.log("Signup attempt from:", req.headers.origin);
@@ -93,7 +93,7 @@ router.post("/signup", csrfProtection, async (req, res) => {
         email: newUser.email,
         role: newUser.role
       }
-     
+      // Don't send token in response body when using HTTP-only cookie
     });
 
   } catch (error) {
@@ -187,7 +187,7 @@ router.post("/logout", csrfProtection, (req, res) => {
   res.json({ success: true, message: "Logged out successfully" });
 });
 
-//  VALIDATE SESSION (optional)
+// VALIDATE SESSION (optional)
 router.get("/validate", csrfProtection, (req, res) => {
   try {
     const token = req.cookies.token;
