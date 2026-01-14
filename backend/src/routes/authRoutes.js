@@ -14,7 +14,6 @@ const csrfProtection = csrf({
   }
 });
 
-//  CSRF TOKEN ENDPOINT - Must be called before any POST request
 router.get("/csrf-token", csrfProtection, (req, res) => {
   try {
     const token = req.csrfToken();
@@ -74,7 +73,6 @@ router.post("/signup", csrfProtection, async (req, res) => {
       { expiresIn: "5h" }
     );
 
-    // Set HTTP-only cookie with token
     res.cookie("token", token, {
       httpOnly: true,
       sameSite: "none",  
@@ -93,7 +91,6 @@ router.post("/signup", csrfProtection, async (req, res) => {
         email: newUser.email,
         role: newUser.role
       }
-      // Don't send token in response body when using HTTP-only cookie
     });
 
   } catch (error) {
