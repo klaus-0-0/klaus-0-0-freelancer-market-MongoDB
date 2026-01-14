@@ -6,16 +6,16 @@ const csrf = require("csurf");
 
 const router = express.Router();
 
-// CSRF middleware MUST be initialized with proper config
+// IMPORTANT: CSRF middleware MUST be initialized with proper config
 const csrfProtection = csrf({
   cookie: {
     httpOnly: true,
-    secure: true, 
-    sameSite: "none" 
+    secure: true, // MUST be true when sameSite is "none"
+    sameSite: "none" // Required for cross-origin on Render
   }
 });
 
-// CSRF TOKEN ENDPOINT - Must be called before any POST request
+//  CSRF TOKEN ENDPOINT - Must be called before any POST request
 router.get("/csrf-token", csrfProtection, (req, res) => {
   try {
     const token = req.csrfToken();
@@ -94,6 +94,7 @@ router.post("/signup", csrfProtection, async (req, res) => {
         email: newUser.email,
         role: newUser.role
       }
+     
     });
 
   } catch (error) {
