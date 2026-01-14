@@ -33,7 +33,7 @@ const csrfProtection = csrf({
   }
 });
 
-// Apply CSRF to all routes except GET
+// CSRF to all routes except GET
 app.use((req, res, next) => {
   if (req.method === "GET") {
     return next(); 
@@ -67,18 +67,14 @@ io.on("connection", (socket) => {
   });
 });
 
-// MongoDB connection
 console.log("Environment check:");
 console.log("NODE_ENV:", process.env.NODE_ENV);
 console.log("MONGODB_URI:", process.env.MONGODB_URI );
 console.log("TOKEN_SECRET:", process.env.TOKEN);
 
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+mongoose.connect(process.env.MONGODB_URI)
 .then(() => {
-  console.log("✅ MongoDB connected successfully");
+  console.log("MongoDB connected successfully");
   
   server.listen(PORT, () => {
     console.log(` Server running on port ${PORT}`);
@@ -87,5 +83,4 @@ mongoose.connect(process.env.MONGODB_URI, {
 })
 .catch(err => {
   console.error("MongoDB connection failed:", err.message);
-  process.exit(1);
 });
