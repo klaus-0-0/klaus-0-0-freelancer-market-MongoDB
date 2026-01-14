@@ -6,7 +6,7 @@ const csrf = require("csurf");
 
 const router = express.Router();
 
-// IMPORTANT: CSRF middleware MUST be initialized with proper config
+// CSRF middleware MUST be initialized with proper config
 const csrfProtection = csrf({
   cookie: {
     httpOnly: true,
@@ -15,7 +15,7 @@ const csrfProtection = csrf({
   }
 });
 
-// ✅ CSRF TOKEN ENDPOINT - Must be called before any POST request
+// CSRF TOKEN ENDPOINT - Must be called before any POST request
 router.get("/csrf-token", csrfProtection, (req, res) => {
   try {
     const token = req.csrfToken();
@@ -30,7 +30,7 @@ router.get("/csrf-token", csrfProtection, (req, res) => {
   }
 });
 
-// ✅ SIGNUP WITH CSRF PROTECTION
+// SIGNUP WITH CSRF PROTECTION
 router.post("/signup", csrfProtection, async (req, res) => {
   try {
     console.log("Signup attempt from:", req.headers.origin);
@@ -94,7 +94,6 @@ router.post("/signup", csrfProtection, async (req, res) => {
         email: newUser.email,
         role: newUser.role
       }
-      // Don't send token in response body when using HTTP-only cookie
     });
 
   } catch (error) {
@@ -107,7 +106,7 @@ router.post("/signup", csrfProtection, async (req, res) => {
   }
 });
 
-// ✅ LOGIN WITH CSRF PROTECTION
+//  LOGIN WITH CSRF PROTECTION
 router.post("/login", csrfProtection, async (req, res) => {
   try {
     console.log("Login attempt from:", req.headers.origin);
@@ -177,7 +176,7 @@ router.post("/login", csrfProtection, async (req, res) => {
   }
 });
 
-// ✅ LOGOUT
+//  LOGOUT
 router.post("/logout", csrfProtection, (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
@@ -188,7 +187,7 @@ router.post("/logout", csrfProtection, (req, res) => {
   res.json({ success: true, message: "Logged out successfully" });
 });
 
-// ✅ VALIDATE SESSION (optional)
+//  VALIDATE SESSION (optional)
 router.get("/validate", csrfProtection, (req, res) => {
   try {
     const token = req.cookies.token;
