@@ -4,60 +4,97 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const { Server } = require("socket.io");
 const cookieParser = require("cookie-parser");
-const http = require("http"); 
-dotenv.config({ path: "../.env" });
+const http = require("http");
+const csrf = require("csurf");
+
+// Load environment variables
+if (process.env.NODE_ENV !== "production") {
+  dotenv.config({ path: "../.env" });
+}
 
 const app = express();
-const server = http.createServer(app); 
+const server = http.createServer(app);
 
-const io = new Server(server, {
-  cors: {
-    origin: "https://klaus-0-0-freelancer-market.onrender.com",
-    methods: ["GET", "POST", "PATCH", "OPTIONS"],
-    credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
-  },
-});
+const FRONTEND_URL = "https://klaus-0-0-freelancer-market.onrender.com";
+const PORT = process.env.PORT || 3000;
 
-// make io accessible inside routes
-app.set("io", io);
-
+// 1. CORS MUST come first
 app.use(cors({
-  origin: "https://klaus-0-0-freelancer-market.onrender.com",
-  credentials: true
+  origin: FRONTEND_URL,
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-CSRF-Token", "X-Requested-With"]
 }));
+
 app.use(cookieParser());
 app.use(express.json());
 
+// Global CSRF protection for all routes (optional)
+const csrfProtection = csrf({
+  cookie: {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none"
+  }
+});
+
+// Apply CSRF to all routes except GET
+app.use((req, res, next) => {
+  if (req.method === "GET") {
+    return next(); 
+  }
+  csrfProtection(req, res, next);
+});
+
+// Routes with CSRF protection (already applied by middleware)
 app.use("/api", require("../src/routes/authRoutes"));
 app.use("/api", require("../src/routes/sellerRoutes"));
 app.use("/api", require("../src/routes/bidRoutes"));
 
-app.get("/", (req, res) => {
-  res.json({ message: "API running" });
+// Handle preflight requests
+app.options("*", cors());
+
+// Socket.io
+const io = new Server(server, {
+  cors: {
+    origin: FRONTEND_URL,
+    methods: ["GET", "POST", "PATCH", "OPTIONS"],
+    credentials: true,
+  },
 });
+
+app.set("io", io);
 
 io.on("connection", (socket) => {
   console.log("Socket connected:", socket.id);
-
   socket.on("join-freelancer", (freelancerId) => {
-    const room = freelancerId;
-    socket.join(room);
-    console.log("Freelancer joined room:", room);
+    socket.join(freelancerId);
+    console.log("Freelancer joined room:", freelancerId);
   });
-
   socket.on("disconnect", () => {
     console.log("Socket disconnected:", socket.id);
   });
 });
 
-console.log("MONGODB_URI =", process.env.MONGO_URI);
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => {
-    console.log("MongoDB connected");
+// MongoDB connection
+console.log("Environment check:");
+console.log("NODE_ENV:", process.env.NODE_ENV);
+console.log("MONGODB_URI:", process.env.MONGODB_URI );
+console.log("TOKEN_SECRET:", process.env.TOKEN);
 
-    server.listen(process.env.PORT, () => {
-      console.log(`Server running on port ${process.env.PORT}`);
-    });
-  })
-  .catch(console.error);
+mongoose.connect(process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => {
+  console.log("✅ MongoDB connected successfully");
+  
+  server.listen(PORT, () => {
+    console.log(` Server running on port ${PORT}`);
+    console.log(` CSRF Protection: Enabled`);
+  });
+})
+.catch(err => {
+  console.error("MongoDB connection failed:", err.message);
+  process.exit(1);
+});
