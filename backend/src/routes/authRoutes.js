@@ -46,12 +46,14 @@ router.post("/signup", csrfProtection, async (req, res) => {
       { expiresIn: "5h" }
     );
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      sameSite: "strict",
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 5 * 60 * 60 * 1000
-    });
+  res.cookie("token", token, {
+    httpOnly: true,
+    sameSite: "none",  
+    secure: true,      
+    maxAge: 5 * 60 * 60 * 1000, // 5 hours
+    domain: process.env.NODE_ENV === "production",
+    path: "/"         
+  });
 
     res.status(201).json({
       success: true,
@@ -86,11 +88,13 @@ router.post("/login", csrfProtection, async (req, res) => {
     );
 
     res.cookie("token", token, {
-      httpOnly: true,
-      sameSite: "strict",
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 5 * 60 * 60 * 1000
-    });
+    httpOnly: true,
+    sameSite: "none",  
+    secure: true,     
+    maxAge: 5 * 60 * 60 * 1000, // 5 hours
+    domain: process.env.NODE_ENV === "production", 
+    path: "/"          // Explicitly set to all path
+});
 
     res.status(201).json({ success: true, message: "success", userData: { email: findUser.email, name: findUser.username, userId: findUser.id }, token })
   } catch (error) {
