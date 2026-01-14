@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import logo from "../assets/freelancer.png";
 import { io } from "socket.io-client";
 
-const socket = io("http://localhost:3000", {
+const socket = io("https://klaus-0-0-freelancer-market-backend.onrender.com", {
   withCredentials: true
 });
 
