@@ -12,6 +12,20 @@ function Client() {
     const [selectedSeller, setSelectedSeller] = useState(null);
     const [bidData, setBidData] = useState({ amount: "", message: "" });
     const [clientId, setClientId] = useState("");
+    const [csrfToken, setCsrfToken] = useState(""); // ← ADDED THIS LINE
+
+    // Fetch CSRF token on mount
+    useEffect(() => {
+        const fetchCsrfToken = async () => {
+            try {
+                const res = await axios.get(`${config.apiUrl}/csrf-token`);
+                setCsrfToken(res.data.csrfToken);
+            } catch (error) {
+                console.error("Failed to fetch CSRF token", error.message);
+            }
+        };
+        fetchCsrfToken();
+    }, []);
 
     // Get clientId from localStorage on mount
     useEffect(() => {
@@ -63,13 +77,16 @@ function Client() {
                     message: bidData.message
                 },
                 {
+                    headers: {
+                        "X-CSRF-Token": csrfToken // ← ADDED THIS HEADER
+                    },
                     withCredentials: true
                 }
             );
 
             alert("Bid sent successfully!");
             setShowBidForm(false);
-            navigate("/clientdashboard")
+            navigate("/clientdashboard");
         } catch (error) {
             console.error("Bid failed:", error.response?.data || error.message);
             alert("Failed to send bid");
