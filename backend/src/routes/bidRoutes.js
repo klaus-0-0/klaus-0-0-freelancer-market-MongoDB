@@ -2,10 +2,20 @@ const express = require("express");
 const Bid = require("../mongoDB/models/bidSchema");
 const authMiddleware = require("../mongoDB/middleware/verifyUser");
 const SellerProfile = require("../mongoDB/models/sellerSchema");
+const csrf = require("csurf");
 
 const router = express.Router();
 
-router.post("/bids", authMiddleware, async (req, res) => {
+// CSRF Protection Middleware
+const csrfProtection = csrf({
+  cookie: {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none"
+  }
+});
+
+router.post("/bids", authMiddleware, csrfProtection, async (req, res) => {
   try {
     const { seller, amount, message } = req.body;
 
@@ -46,38 +56,53 @@ router.post("/bids", authMiddleware, async (req, res) => {
 });
 
 router.get("/bids/seller", authMiddleware, async (req, res) => {
-  const sellerProfile = await SellerProfile.findOne({
-    user: req.user.id
-  }); 
+  try {
+    const sellerProfile = await SellerProfile.findOne({
+      user: req.user.id
+    }); 
 
-  if (!sellerProfile) {
-    return res.status(404).json({ message: "Seller profile not found" });
+    if (!sellerProfile) {
+      return res.status(404).json({ 
+        success: false,
+        message: "Seller profile not found" 
+      });
+    }
+
+    const bids = await Bid.find({ seller: sellerProfile._id })
+      .populate("client", "username email")
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      bids,
+      freelancerId: sellerProfile._id
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
-
-  const bids = await Bid.find({ seller: sellerProfile._id })
-    .populate("client", "username email")
-    .sort({ createdAt: -1 });
-
-  res.json({
-    success: true,
-    bids,
-    freelancerId: sellerProfile._id
-  });
 });
 
-
-router.patch("/bids/:id/status", authMiddleware, async (req, res) => {
+router.patch("/bids/:id/status", authMiddleware, csrfProtection, async (req, res) => {
   try {
     const { status } = req.body;
 
     if (!["accepted", "rejected"].includes(status)) {
-      return res.status(400).json({ message: "Invalid status" });
+      return res.status(400).json({ 
+        success: false,
+        message: "Invalid status" 
+      });
     }
 
     const bid = await Bid.findById(req.params.id);
 
     if (!bid) {
-      return res.status(404).json({ message: "Bid not found" });
+      return res.status(404).json({ 
+        success: false,
+        message: "Bid not found" 
+      });
     }
 
     bid.status = status;
@@ -90,13 +115,19 @@ router.patch("/bids/:id/status", authMiddleware, async (req, res) => {
       status
     });
 
-    res.json({ success: true, bid });
+    res.json({ 
+      success: true, 
+      message: `Bid ${status} successfully`,
+      bid 
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ 
+      success: false, 
+      message: error.message 
+    });
   }
 });
 
-// GET /bids/client
 router.get("/bids/client", authMiddleware, async (req, res) => {
   try {
     // Fetch all bids made by this client
@@ -104,12 +135,17 @@ router.get("/bids/client", authMiddleware, async (req, res) => {
       .populate("seller", "name role") // Populate seller info
       .sort({ createdAt: -1 });
 
-    res.status(200).json({ success: true, bids });
+    res.status(200).json({ 
+      success: true, 
+      bids 
+    });
   } catch (error) {
     console.error("CLIENT BIDS ERROR:", error);
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ 
+      success: false, 
+      message: error.message 
+    });
   }
 });
-
 
 module.exports = router;
