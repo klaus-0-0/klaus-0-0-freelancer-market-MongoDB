@@ -7,10 +7,7 @@ const cookieParser = require("cookie-parser");
 const http = require("http");
 const csrf = require("csurf");
 
-// Load environment variables
-if (process.env.NODE_ENV !== "production") {
-  dotenv.config({ path: "../.env" });
-}
+dotenv.config({ path: "../.env" });
 
 const app = express();
 const server = http.createServer(app);
@@ -18,7 +15,6 @@ const server = http.createServer(app);
 const FRONTEND_URL = "https://klaus-0-0-freelancer-market.onrender.com";
 const PORT = process.env.PORT || 3000;
 
-// 1. CORS MUST come first
 app.use(cors({
   origin: FRONTEND_URL,
   credentials: true,
@@ -29,7 +25,6 @@ app.use(cors({
 app.use(cookieParser());
 app.use(express.json());
 
-// Global CSRF protection for all routes (optional)
 const csrfProtection = csrf({
   cookie: {
     httpOnly: true,
@@ -46,13 +41,9 @@ app.use((req, res, next) => {
   csrfProtection(req, res, next);
 });
 
-// Routes with CSRF protection (already applied by middleware)
 app.use("/api", require("../src/routes/authRoutes"));
 app.use("/api", require("../src/routes/sellerRoutes"));
 app.use("/api", require("../src/routes/bidRoutes"));
-
-// Handle preflight requests
-app.options("*", cors());
 
 // Socket.io
 const io = new Server(server, {
