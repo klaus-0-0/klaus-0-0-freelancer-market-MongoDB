@@ -21,6 +21,20 @@ function Freelancer() {
   const [hourlyRate, setHourlyRate] = useState("");
   const [role, setRole] = useState("");
   const [description, setDescription] = useState("");
+  const [csrfToken, setCsrfToken] = useState(""); 
+
+    // Fetch CSRF token on mount
+    useEffect(() => {
+        const fetchCsrfToken = async () => {
+            try {
+                const res = await axios.get(`${config.apiUrl}/csrf-token`);
+                setCsrfToken(res.data.csrfToken);
+            } catch (error) {
+                console.error("Failed to fetch CSRF token", error.message);
+            }
+        };
+        fetchCsrfToken();
+    }, []);
 
   const categories = [
     { id: 1, title: "I am a Developer", img: p6, skills: "React, Node, MongoDB" },
@@ -55,9 +69,11 @@ function Freelancer() {
         },
         {
           headers: {
-            withCredentials: true
-          },
-        }
+                        "X-CSRF-Token": csrfToken,
+                        "Content-Type": "application/json",
+                    },
+                     withCredentials: true
+              }
       );
 
       alert("Seller profile created successfully");
