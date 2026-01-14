@@ -12,7 +12,7 @@ function Client() {
     const [selectedSeller, setSelectedSeller] = useState(null);
     const [bidData, setBidData] = useState({ amount: "", message: "" });
     const [clientId, setClientId] = useState("");
-    const [csrfToken, setCsrfToken] = useState(""); // ← ADDED THIS LINE
+    const [csrfToken, setCsrfToken] = useState(""); 
 
     // Fetch CSRF token on mount
     useEffect(() => {
@@ -78,7 +78,8 @@ function Client() {
                 },
                 {
                     headers: {
-                        "X-CSRF-Token": csrfToken // ← ADDED THIS HEADER
+                        "X-CSRF-Token": csrfToken,
+                         "Content-Type": "application/json",
                     },
                     withCredentials: true
                 }
