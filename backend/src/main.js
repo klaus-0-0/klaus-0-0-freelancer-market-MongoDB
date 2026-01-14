@@ -13,7 +13,7 @@ const server = http.createServer(app); // ✅ FIX
 
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: "https://klaus-0-0-freelancer-market.onrender.com",
     methods: ["GET", "POST", "PATCH", "OPTIONS"],
     credentials: true,
   },
@@ -23,7 +23,7 @@ const io = new Server(server, {
 app.set("io", io);
 
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: "https://klaus-0-0-freelancer-market.onrender.com",
   credentials: true
 }));
 app.use(cookieParser());
