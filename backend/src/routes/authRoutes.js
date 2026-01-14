@@ -10,8 +10,8 @@ const router = express.Router();
 const csrfProtection = csrf({
   cookie: {
     httpOnly: true,
-    secure: true, // MUST be true when sameSite is "none"
-    sameSite: "none" // Required for cross-origin on Render
+    secure: true, 
+    sameSite: "none" 
   }
 });
 
