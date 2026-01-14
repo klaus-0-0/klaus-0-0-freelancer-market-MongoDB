@@ -12,6 +12,20 @@ const socket = io("https://klaus-0-0-freelancer-market-backend.onrender.com", {
 function FreelancerDashboard() {
   const navigate = useNavigate();
   const [bids, setBids] = useState([]);
+  const [csrfToken, setCsrfToken] = useState(""); 
+
+  // Fetch CSRF token on mount
+  useEffect(() => {
+    const fetchCsrfToken = async () => {
+      try {
+        const res = await axios.get(`${config.apiUrl}/csrf-token`);
+        setCsrfToken(res.data.csrfToken);
+      } catch (error) {
+        console.error("Failed to fetch CSRF token", error.message);
+      }
+    };
+    fetchCsrfToken();
+  }, []);
 
   // Fetch bids & join room
   useEffect(() => {
@@ -55,6 +69,10 @@ function FreelancerDashboard() {
       `${config.apiUrl}/bids/${bidId}/status`,
       { status },
       {
+        headers: {
+          "X-CSRF-Token": csrfToken,
+          "Content-Type": "application/json" 
+        },
         withCredentials: true
       }
     );
@@ -71,7 +89,13 @@ function FreelancerDashboard() {
     await axios.post(
       `${config.apiUrl}/logout`,
       {},
-      { withCredentials: true }
+      {
+        headers: {
+          "X-CSRF-Token": csrfToken, // ← ADDED THIS HEADER
+          "Content-Type": "application/json" // ← ADDED THIS HEADER
+        },
+        withCredentials: true
+      }
     );
     navigate("/login");
   };
