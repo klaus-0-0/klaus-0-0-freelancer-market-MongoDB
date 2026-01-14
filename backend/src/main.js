@@ -15,6 +15,7 @@ const io = new Server(server, {
     origin: "https://klaus-0-0-freelancer-market.onrender.com",
     methods: ["GET", "POST", "PATCH", "OPTIONS"],
     credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
   },
 });
 
