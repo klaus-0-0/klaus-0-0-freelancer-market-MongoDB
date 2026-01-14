@@ -4,6 +4,8 @@ import axios from "axios";
 import config from "../config";
 import wall from "../assets/e3.jpg"
 
+axios.defaults.withCredentials = true;
+
 const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
@@ -15,9 +17,7 @@ const Login = () => {
   useEffect(() => {
     const fetchCsrfToken = async () => {
       try {
-        const res = await axios.get(`${config.apiUrl}/csrf-token`, {
-          withCredentials: true
-        });
+        const res = await axios.get(`${config.apiUrl}/csrf-token`);
         setCsrfToken(res.data.csrfToken);
       } catch (error) {
         console.error("Failed to fetch CSRF token", error.message);
@@ -28,6 +28,12 @@ const Login = () => {
   }, []);
 
   const handleLogin = async () => {
+    // Check if CSRF token exists
+    if (!csrfToken) {
+      setError("Security token not loaded. Please refresh the page.");
+      return;
+    }
+
     setLoading(true);
     setError("");
 
@@ -36,9 +42,9 @@ const Login = () => {
         `${config.apiUrl}/login`,
         { email, password },
         {
-          withCredentials: true, 
           headers: {
-            "X-CSRF-Token": csrfToken
+            "X-CSRF-Token": csrfToken,
+            "Content-Type": "application/json"
           }
         }
       );
@@ -49,7 +55,16 @@ const Login = () => {
       navigate("/Home");
     } catch (err) {
       console.error(err);
-      setError("Login Failed! Please check your credentials.");
+      
+      if (err.response?.status === 403) {
+        setError("Session expired. Please refresh and try again.");
+      } else if (err.response?.status === 404) {
+        setError("User not found. Please check your email.");
+      } else if (err.response?.status === 401) {
+        setError("Invalid credentials. Please try again.");
+      } else {
+        setError("Login Failed! Please check your credentials.");
+      }
     } finally {
       setLoading(false);
     }
