@@ -5,11 +5,7 @@ const mongoose = require("mongoose");
 const { Server } = require("socket.io");
 const cookieParser = require("cookie-parser");
 const http = require("http"); 
-// dotenv.config({ path: "../.env" });
-const { loadEnv } = require("./config"); 
-
-// Load environment variables
-loadEnv();
+dotenv.config({ path: "../.env" });
 
 const app = express();
 const server = http.createServer(app); 
@@ -54,8 +50,8 @@ io.on("connection", (socket) => {
   });
 });
 
-console.log("MONGO_URI =", process.env.MONGO_URI);
-mongoose.connect(process.env.MONGO_URI)
+console.log("MONGODB_URI =", process.env.MONGO_URI);
+mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
     console.log("MongoDB connected");
 
