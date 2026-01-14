@@ -1,15 +1,14 @@
 const dotenv = require("dotenv");
-dotenv.config({ path: "../.env" });
-
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const { Server } = require("socket.io");
 const cookieParser = require("cookie-parser");
-const http = require("http"); // ✅ REQUIRED
+const http = require("http"); 
+dotenv.config({ path: "../.env" });
 
 const app = express();
-const server = http.createServer(app); // ✅ FIX
+const server = http.createServer(app); 
 
 const io = new Server(server, {
   cors: {
