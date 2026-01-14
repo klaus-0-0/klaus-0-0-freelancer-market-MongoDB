@@ -5,7 +5,11 @@ const mongoose = require("mongoose");
 const { Server } = require("socket.io");
 const cookieParser = require("cookie-parser");
 const http = require("http"); 
-dotenv.config({ path: "../.env" });
+// dotenv.config({ path: "../.env" });
+const { loadEnv } = require("./config"); 
+
+// Load environment variables
+loadEnv();
 
 const app = express();
 const server = http.createServer(app); 
