@@ -1,10 +1,20 @@
 const express = require("express");
 const SellerProfile = require("../mongoDB/models/sellerSchema");
 const authMiddleware = require("../mongoDB/middleware/verifyUser");
+const csrf = require("csurf");
 
 const router = express.Router();
 
-router.post("/seller", authMiddleware, async (req, res) => {
+// CSRF Protection Middleware
+const csrfProtection = csrf({
+  cookie: {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none"
+  }
+});
+
+router.post("/seller", authMiddleware, csrfProtection, async (req, res) => {
   try {
     const sellerData = new SellerProfile({
       user: req.user.id,
