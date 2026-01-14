@@ -29,7 +29,7 @@ const Signup = () => {
         console.log("Fetching CSRF token...");
         const response = await axios.get("/csrf-token");
         csrfToken = response.data.csrfToken;
-        console.log("CSRF token received:", csrfToken );
+        console.log("CSRF token received:", csrfToken ? "✓" : "✗");
         
         // Set as default header for all subsequent requests
         axios.defaults.headers.common['X-CSRF-Token'] = csrfToken;
@@ -42,11 +42,11 @@ const Signup = () => {
     fetchCsrfToken();
     
     // Check if already logged in
-  //   const userData = localStorage.getItem("userData");
-  //   if (userData) {
-  //     navigate("/Dashboard");
-  //   }
-  // }, [navigate]);
+    const userData = localStorage.getItem("userData");
+    if (userData) {
+      navigate("/Dashboard");
+    }
+  }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -54,7 +54,7 @@ const Signup = () => {
       ...prev,
       [name]: value
     }));
-    setError(""); 
+    setError(""); // Clear errors on typing
   };
 
   const handleSignup = async (e) => {
@@ -84,9 +84,11 @@ const Signup = () => {
       if (response.data.success) {
         // Store user data
         localStorage.setItem("userData", JSON.stringify(response.data.userData));
+        
         // Optional: Store in sessionStorage for better security
         sessionStorage.setItem("isAuthenticated", "true");
         
+        // Navigate to home
         navigate("/Home");
       } else {
         setError(response.data.message || "Signup failed");
